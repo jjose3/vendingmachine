@@ -86,10 +86,10 @@ module top_vendingmachine ();
 		if(~coke) begin
 			if(coininserted) begin
 				case(coin)
-					0 : amount = amount+1;
-					1 : amount = amount+5;
-					2 : amount = amount+10;
-					3 : amount = amount+25; 
+					0 : begin amount = amount+1; $display("\t Time %0t - PROGRESS: A penny is inserted and total amount inserted=%0d", $time,amount); end
+					1 : begin amount = amount+5; $display("\t Time %0t - PROGRESS: A nickel is inserted and total amount inserted=%0d", $time, amount); end 
+					2 : begin amount = amount+10; $display("\t Time %0t - PROGRESS: A dime is inserted and total amount inserted=%0d",$time, amount); end
+					3 : begin amount = amount+25; $display("\t Time %0t - PROGRESS: A quarter is inserted and total amount inserted=%0d",$time, amount); end
 				endcase
 				//$display("amount = %d", amount);
 			end else;
@@ -103,16 +103,21 @@ module top_vendingmachine ();
 	end
     end
 
-    always @(posedge coke) begin		
-    	if(amount == (35 + (change_dime*10) + (change_nickel*5) + (change_penny*1))) 
-		$display("Change is correct");
-	else 
-		$error("ERROR - Wrong change - expected change: %d change: %d", (amount-35), ((change_dime*10) + (change_nickel*5) + (change_penny*1)));
-    end
+//    always @(posedge coke) begin		
+//    	if(amount == (35 + (change_dime*10) + (change_nickel*5) + (change_penny*1))) 
+//		$display("Change is correct");
+//	else 
+//		$error("ERROR - Wrong change - expected change: %d change: %d", (amount-35), ((change_dime*10) + (change_nickel*5) + (change_penny*1)));
+//    end
 
-    assert property (@(negedge clk) (amount >= 35) |-> $rose(coke)) $display("coke dispensed at the right time");
+    assert property (@(negedge clk) coke |-> (amount == (35 + (change_dime*10) + (change_nickel*5) + (change_penny*1)))) $display("\t Time %0t - DONE: Change returned is correct - %0d",$time, ((change_dime*10)+(change_nickel*5)+(change_penny*1)));
 	else begin
-		$error("coke was not dispensed at the right time");
+		$error("ERROR - Wrong change - expected change: %d change: %d", (amount-35), ((change_dime*10) + (change_nickel*5) + (change_penny*1)));
+	end
+
+    assert property (@(negedge clk) (amount >= 35) |-> $rose(coke)) $display("\t Time %0t - DONE: Coke dispensed at the right time", $time);
+	else begin
+		$error("Coke was not dispensed at the right time");
 	end
 
 
