@@ -1,0 +1,90 @@
+//top_seqDiv.vp
+
+
+module `mname` ();
+
+//; my $dut = generate_base("seqDiv", "my_seqDiv");
+//; my $bW = $dut->get_param("bitWidth");
+
+//; my $gb = generate("generic_bench", "BASIC_BENCH");
+
+//; my $pc = generate("cycle_counter", "PERF_COUNT", CycleName=>"multRate_cyc");
+//; my $ec = generate("cycle_counter", "ERROR_COUNT", CountName=>"mult_err_cnt");
+
+    logic [`$bW-1`:0] num, last_num;
+    logic [`$bW-1`:0] den, last_den;
+    logic             nd_valid;
+    logic             nd_ready;
+
+    logic             clk;
+    logic             rst;
+
+    logic [`$bW-1`:0] quo;
+    logic [`$bW-1`:0] rem;
+    logic             qr_valid;
+    logic 			  perf ; 
+
+    logic             qr_err ;
+
+    logic             triggerStart;
+    logic             triggerStop;
+    int               seed;
+    int               clk_period ;
+
+    // Instantiate the design under test and basic bench
+    `$dut->instantiate()` (.*);
+    `$gb->instantiate()`  (.*);
+    //;#`$pc->instantiate()`  (.triggerStart(perf), .triggerStop(triggerStop), .increment(qr_valid), .clk(clk), .rst(rst) );
+    `$ec->instantiate()`  (.triggerStart(triggerStart), .triggerStop(triggerStop), .increment(qr_err), .clk(clk), .rst(rst) );
+   // TODO event counter
+
+    // Simulation Narrative
+    initial begin
+    	triggerStart  = 1'b0 ;
+    	triggerStop = 1'b0 ;
+    	perf = 1'b0 ; 
+    	//@(negedge rst);
+    	repeat(100) @(posedge clk );
+    	triggerStart  = 1'b1 ;
+    	repeat(20) @(posedge qr_valid );  //Wait 100k z_valids
+    	//perf = 1'b1 ;
+    	//repeat(5) @(posedge qr_valid );  //Wait 100k z_valids
+    	triggerStop = 1'b1 ;
+    	repeat(10) @(posedge clk );
+    	$finish();
+    end
+
+    // Frontend Driver
+    always @( negedge clk ) begin
+    	// Test bench driven signal start at negedg
+    	//   so it is obv they came from the bench 
+    	num = $random() ;
+    	den = $random() ; 
+    	//nd_valid = perf ? 1'b1 : $random() ; // TODO in event count mode it is always valid
+    	nd_valid = $random() ; // TODO in event count mode it is always valid
+
+    	if( nd_valid && nd_ready ) begin
+    		last_num = num ;
+    		last_den = den ;
+    	end 
+    end
+
+    // Verification
+    always @( posedge clk ) begin
+    	#1
+    	// Wait one tick to see what was flopped
+        qr_err = 1'b0 ;
+    	if( qr_valid && triggerStart && ~triggerStop) begin
+		$display("%t:CALCULATION DONE quo = %h rem = %h num = %h den = %h\n", $time, quo, rem, last_num, last_den);
+    		assert( quo == (last_num / last_den) ) else 
+    			$display("%t: Error - quo is wrong\n", $time);
+		assert( rem == (last_num % last_den) ) else 
+    			$display("%t: Error - rem is wrong\n", $time());
+            qr_err = ( quo != (last_num / last_den) ) ;
+    	end
+
+    end
+
+
+
+endmodule 

@@ -1,0 +1,236 @@
+//top_fifo.vp
+
+
+module `mname` ();
+
+//; my $dut = generate_base("fifo", "my_fifo");
+//; my $bW = $dut->get_param("bitWidth");
+//; my $eC = $dut->get_param("occupancy");
+
+//; my $gb = generate("generic_bench", "BASIC_BENCH");
+
+//; my $pc = generate("cycle_counter", "PERF_COUNT", CycleName=>"multRate_cyc");
+//; my $ec = generate("cycle_counter", "ERROR_COUNT", CountName=>"mult_err_cnt");
+
+    logic [`$bW-1`:0] push_data, mypush_data;
+    logic [`$bW-1`:0] pop_data, mypop_data;
+    logic             pop;
+    logic             push;
+    logic [`$eC`:0] pushcnt;
+    logic             clk;
+    logic             rst;
+
+    logic             empty;
+    logic             full;
+    logic 			  perf ; 
+
+    logic             qr_err ;
+
+    logic             triggerStart;
+    logic             triggerStop;
+    int               seed;
+    int               clk_period ;
+
+
+    // Instantiate the design under test and basic bench
+    `$dut->instantiate()` (.*);
+    `$gb->instantiate()`  (.*);
+    //`$pc->instantiate()`  (.triggerStart(perf), .triggerStop(triggerStop), .increment(qr_valid), .clk(clk), .rst(rst) );
+    //`$ec->instantiate()`  (.triggerStart(triggerStart), .triggerStop(triggerStop), .increment(qr_err), .clk(clk), .rst(rst) );
+   // TODO event counter
+
+    // Simulation Narrative
+    initial begin
+    	triggerStart  = 1'b0 ;
+    	triggerStop = 1'b0 ;
+    	perf = 1'b0 ; 
+    	//@(negedge rst);
+    	repeat(100) @(posedge clk );
+    	triggerStart  = 1'b1 ;
+	repeat(10000) @(posedge clk );
+    	//repeat(5) @(posedge qr_valid );  //Wait 100k z_valids
+    	//perf = 1'b1 ;
+    	//repeat(5) @(posedge qr_valid );  //Wait 100k z_valids
+    	triggerStop = 1'b1 ;
+    	repeat(10) @(posedge clk );
+    	$finish();
+    end
+
+    initial begin
+   push=1'b0;
+   pop=1'b0;
+	repeat(105) @(posedge clk );
+   push_data=4'b0000;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0001;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0010;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0011;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0100;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0101;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0110;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0111;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+
+   push_data=4'b1000;
+   #clk_period;
+
+
+   push_data=4'b1001;
+   #clk_period;
+
+
+   push_data=4'b1010;
+   #clk_period;
+
+
+   push_data=4'b1011;
+   #clk_period;
+
+   push_data=4'b1100;
+   #clk_period;
+
+   push_data=4'b1101;
+   #clk_period;
+
+   push_data=4'b1110;
+   #clk_period;
+
+   push_data=4'b1111;
+   #clk_period;
+
+   push=1'b0;
+   pop=1'b1;
+   #(12*clk_period);
+   
+   push_data=4'b0001;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0010;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0100;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b1000;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b1111;
+   push=1'b0;
+   pop=1'b1;
+   #clk_period;
+
+   push_data=4'b0110;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0101;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0111;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b1110;
+   push=1'b0;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0111;
+   push=1'b0;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0101;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0110;
+   push=1'b0;
+   pop=1'b1;
+   #clk_period;
+
+   push_data=4'b0101;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0101;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0110;
+   push=1'b0;
+   pop=1'b1;
+   #clk_period;
+
+   push_data=4'b0101;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0101;
+   push=1'b1;
+   pop=1'b0;
+   #clk_period;
+
+   push_data=4'b0110;
+   push=1'b0;
+   pop=1'b1;
+   #clk_period;
+    end
+
+
+    // Verification
+    //always @( posedge clk ) begin
+    //	#1
+    //	// Wait one tick to see what was flopped
+    //    
+    //end
+
+
+
+endmodule 
